@@ -1,25 +1,53 @@
-var chess = document.getElementById('chess');
+var board = document.getElementById('chess');
 var context = chess.getContext('2d');
 
 
-// TODO:  set white to 1 or 2 
+var isGameOn = false
 
-var color = true;
+// TODO:  switch color button
 
-// init board 
-var chessBoard = [];
+$(document).ready(function(){
+
+
+    $("button").click(function(){
+        // alert("Width of div: " + $("#chess").width());
+        if (!isGameOn){
+        	isWhite = !isWhite
+        } else {
+        	alert("You can not switch side during a game");
+        }
+    });
+
+    
+});
+
+$(document).ready(function(){
+	if(isWhite){
+		$("#sideYou").text('You: White');
+	   	$("#sideComp").text('Computer: Black');
+	}else{
+    	$("#sideYou").text('You: Black');
+    	$("#sideComp").text('Computer: White');
+    }
+
+});
+var isWhite = false;
+
+// init board value
+var brd = []; 
 for (var i = 0; i < 15; i++) {
-	chessBoard[i] = [];
+	brd[i] = [];
 	for (var j = 0; j < 15; j++) {
-		chessBoard[i][j] = 0;
+		brd[i][j] = 0;
 	}
 }
 
 // constant
-var size = 450 // TODO: get size from responsive webpage 
-var borderWidth = 15
-var cellWidth = 30 
-var stoneR = 13
+var size =  750// TODO: get size from responsive webpage 
+// $("#chess").width()
+var borderWidth = 25
+var cellWidth = 50
+var stoneR = 50/2 - 3
 
 //add background and set strock color 
 context.strokeStyle = '#666666';
@@ -29,11 +57,11 @@ var logo = new Image();
 logo.src = "image/logo.png";
 logo.onload = function() {
 	context.drawImage(logo, 0, 0, size, size);
-	drawChessBoard();
+	drawBoard();
 }
 
 //Draw board 
-var drawChessBoard = function() {
+var drawBoard = function() {
 	for (var i = 0; i < borderWidth; i++) {
 		context.moveTo(borderWidth + i * cellWidth, borderWidth);
 		context.lineTo(borderWidth + i * cellWidth, size - borderWidth);
@@ -44,54 +72,55 @@ var drawChessBoard = function() {
 	}
 }
 
-var step = function(i, j, color) {
+var step = function(i, j, isWhite) {
+	if (!isGameOn){
+		isGameOn = true
+	}
+
+
 	context.beginPath();
-	context.arc(borderWidth + i * 30, borderWidth + j * 30, 13, 0, 2 * Math.PI);
+	context.arc(borderWidth + i * cellWidth, borderWidth + j * cellWidth, stoneR, 0, 2 * Math.PI);
 	context.closePath();
 	var gradient = context.createRadialGradient(borderWidth + i * cellWidth + 2, 
 												borderWidth + j * cellWidth - 2, 
-												13, 
+												stoneR, 
 												borderWidth + i * cellWidth + 2, 
 												borderWidth + j * cellWidth - 2, 
 												0);
-	
 	// TODO set color to constant 
-	if (color) {
-		gradient.addColorStop(0, "#0A0A0A");
-		gradient.addColorStop(1, "#636766");
-	} else {
+	if (isWhite) {
 		gradient.addColorStop(0, "#D1D1D1");
 		gradient.addColorStop(1, "#F9F9F9");
+	} else {
+		gradient.addColorStop(0, "#0A0A0A");
+		gradient.addColorStop(1, "#636766");
+		
 	}
 	context.fillStyle = gradient;
 	context.fill();
 }
 
-chess.onclick = function(e) {
+board.onclick = function(e) {
 	var x = e.offsetX;
 	var y = e.offsetY;
-	var i = Math.floor(x / 30);
-	var j = Math.floor(y / 30);
-	if (chessBoard[i][j] == 0) {
-		step(i, j, color);
-		if (color) {
-			chessBoard[i][j]=1;
+	var i = Math.floor(x / cellWidth);
+	var j = Math.floor(y / cellWidth);
+	if (brd[i][j] == 0) {
+		step(i, j, isWhite);
+		if (isWhite) {
+			brd[i][j]=1;
 		} else {
-			chessBoard[i][j]=2;
+			brd[i][j]=2;
 		}		
 	}
 
 	// Send JSON 
-
-	color = !color;
-
-
-
+	isWhite = !isWhite;
 }
 
 
 
-// function for recieving JSON from AI
+// function for recieving JSON from AI server
 
 
 
