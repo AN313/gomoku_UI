@@ -143,12 +143,12 @@ $(document).ready(function(){
 
 	// function for recieving JSON from AI server
 	// fake json for moves 
-	var text = httpGet('http://localhost:8000/mcts')
+	// var text = httpGet('http://localhost:8001/mcts')
 	var move = '{ "x":"1", "y":"2" , "color":"black"}';
 
 	move_obj = JSON.parse(move);
 	// document.getElementById("demo").inneHTML = move_obj.x + " " + move_obj.y + " " + move_obj.color;
-	document.getElementById("demo").inneHTML = text
+	// document.getElementById("demo").inneHTML = text
 
     $("#play").click(function(){
     	var text = '{"x":3,"y":3,"color":"black" }';
@@ -166,6 +166,24 @@ $(document).ready(function(){
 		}		
 	}
         
+    });
+});
+
+
+$(document).ready(function(){
+    $.ajax({
+        url: 'http://localhost:8001/mcts',
+        dataType: 'json',
+        success: function(json) {
+            // Rates are in `json.rates`
+            // Base currency (USD) is `json.base`
+            // UNIX Timestamp when rates were collected is in `json.timestamp`        
+
+            rates = json.x;
+            base = json.y;
+            console.log('x: '+ x);
+            console.log('y: '+ y);
+        }
     });
 });
 
