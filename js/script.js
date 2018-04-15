@@ -9,7 +9,7 @@ var isGameOn = false
 $(document).ready(function(){
 
 
-    $("button").click(function(){
+    $("#switch").click(function(){
         // alert("Width of div: " + $("#chess").width());
         if (!isGameOn){
         	isWhite = !isWhite
@@ -100,6 +100,8 @@ var step = function(i, j, isWhite) {
 	context.fill();
 }
 
+
+// sample function 
 board.onclick = function(e) {
 	var x = e.offsetX;
 	var y = e.offsetY;
@@ -121,10 +123,72 @@ board.onclick = function(e) {
 
 
 // function for recieving JSON from AI server
+// fake json for moves 
+
+// var move = '{ "x":"1", "y":"2" , "color":"black"}';
+
+// move_obj = JSON.parse(move);
+// document.getElementById("demo").inneHTML = move_obj.x + " " + move_obj.y + " " + move_obj.color;
 
 
+function httpGet(theUrl)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
 
+$(document).ready(function(){
 
+	// function for recieving JSON from AI server
+	// fake json for moves 
+	var text = httpGet('http://localhost:8000/mcts')
+	var move = '{ "x":"1", "y":"2" , "color":"black"}';
+
+	move_obj = JSON.parse(move);
+	// document.getElementById("demo").inneHTML = move_obj.x + " " + move_obj.y + " " + move_obj.color;
+	document.getElementById("demo").inneHTML = text
+
+    $("#play").click(function(){
+    	var text = '{"x":3,"y":3,"color":"black" }';
+    	obj = JSON.parse(text);
+    	i = obj.x
+    	j = obj.y
+    	isWhite = (obj.color == "white")
+        // alert("Width of div: " + $("#chess").width());
+        if (brd[i][j] == 0) {
+		step(i, j, isWhite);
+		if (isWhite) {
+			brd[i][j]=1;
+		} else {
+			brd[i][j]=2;
+		}		
+	}
+        
+    });
+});
+
+// sample function for sending ajax
+// function send() {
+//     var person = {
+//         name: $("#id-name").val(),
+//         address:$("#id-address").val(),
+//         phone:$("#id-phone").val()
+//     }
+
+//     $('#target').html('sending..');
+
+//     $.ajax({
+//         url: '/test/PersonSubmit',
+//         type: 'post',
+//         dataType: 'json',
+//         success: function (data) {
+//             $('#target').html(data.msg);
+//         },
+//         data: person
+//     });
+// }
 
 
 
