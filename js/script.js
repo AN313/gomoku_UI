@@ -1,7 +1,14 @@
 var board = document.getElementById('chess');
 var context = chess.getContext('2d');
+var canvas = document.getElementById("can");
+var ctx = canvas.getContext('2d');
+
+///////////////////////////////////
+//////    initialization    ///////
+///////////////////////////////////
 
 // black -1 white 1
+var gameState = "normal";
 var isGameOn = false;
 var isWhite = false;
 var isPlayer1Turn = true;
@@ -74,7 +81,6 @@ var step = function(i, j, isWhite) {
 		isGameOn = true
 	}
 
-
 	context.beginPath();
 	context.arc(borderWidth + i * cellWidth, borderWidth + j * cellWidth, stoneR, 0, 2 * Math.PI);
 	context.closePath();
@@ -120,6 +126,9 @@ board.onclick = function(e) {
 
 }
 
+////////////////////////////
+//////    buttons    ///////
+////////////////////////////
 
 $("#play").click(function(){
 	var text = '{"x":3,"y":3,"color":"black" }';
@@ -138,53 +147,17 @@ $("#play").click(function(){
 	}
 });
 
-
 $("#reset").onclick = resetGame();
 
-$("#play").onclick = function(e) {
-	i = 10 // placeholder for now
-	// while(not game end)
-	if(reseted){
-		reseted = false;
-		while(i>0){
-			console.log("here in the game loop");
-			
-			if(isPlayer1Turn){
-				// default black first,computer play first move
-				playMove();
-				isPlayer1Turn = !isPlayer1Turn;
-			}else{
-				board.onclick = function(e) {
-					var x = e.offsetX;
-					var y = e.offsetY;
-					var i = Math.floor(x / cellWidth);
-					var j = Math.floor(y / cellWidth);
-					if (brd[i][j] == 0) {
-						step(i, j, isWhite);
-						if (isWhite) {
-							brd[i][j]=1;
-						} else {
-							brd[i][j]=2;
-						}		
-					}
-					color = -1;
-					if (isWhite){
-						color = 1;
-					}
-					sendMove(i,j,color);
-					isWhite = !isWhite;
-				
-				}
-			}
-			
-			
-			i=i-1;
-		}
-	
-	}
+$("#stop").onclick = function(e) {
+	gameState = 'End';
 }
 
 
+
+///////////////////////////////
+//////    functions    ////////
+///////////////////////////////
 
 function sendMove(x, y, color){
 	$.ajax({
@@ -249,52 +222,101 @@ function makeMove(i, j, color=1){
 	isWhite = !isWhite;
 } 
 
-// MAIN GAME LOOP
+
+
+
+///////////////////////////////
+//////    gameloop    /////////
+///////////////////////////////
 $(document).ready(function(){
-	var i = 10 // placeholder for now
 	// while(not game end)
 	if(reseted){
-		alert("was reseted")
+		// if play button is hit
+
+		console.log("was reseted");
 		reseted = false;
-		while(i>0){
-			console.log("here in the game loop");
-			
-			if(isPlayer1Turn){
-				// default black first,computer play first move
-				playMove();
-				isPlayer1Turn = !isPlayer1Turn;
-				console.log("got computer move");
-			}else{
-				console.log("waiting for user click");
-				board.onclick = function(e) {
-					var x = e.offsetX;
-					var y = e.offsetY;
-					var i = Math.floor(x / cellWidth);
-					var j = Math.floor(y / cellWidth);
-					if (brd[i][j] == 0) {
-						step(i, j, isWhite);
-						if (isWhite) {
-							brd[i][j]=1;
-						} else {
-							brd[i][j]=2;
-						}		
-					}
-					color = -1;
-					if (isWhite){
-						color = 1;
-					}
-					sendMove(i,j,color);
-					isWhite = !isWhite;
-				
-				}
-				// console.log(a)
-			}
-			
-			console.log(i)
-			i=i-1;
-		}
-	
+		
+		initGameLoop();
+		
+		
+		
 	}
 
-
 });
+
+///////////////// moved from gameloop.js
+////// need to fix 
+var initGameLoop = function() {
+	player1 = new humanPlayer();
+	player2 = new computerPlayer();
+	function animate () {
+	  if(gameState === "playerMove1") {
+		player1.acceptMove();
+      	console.log("player 1");
+      	gameState ="playerMove2";
+		
+	  } else if(gameState === "playerMove2"){
+		sleep(3000);
+      	player2.acceptMove();
+      	console.log("player 2");
+      	gameState ="wait";
+	  } else{
+  
+	  }
+	  redraw();
+	  requestAnimationFrame(animate);
+	}
+	animate();
+};
+
+function finishMove() {
+	gameState = "normal";
+ }
+ 
+function player1() {
+	gameState = "playerMove1";
+}
+
+canvas.addEventListener("click", player1);
+
+var humanPlayer = function() {
+	this.count = 0;
+	this.acceptMove = function() {
+	  this.count += 1;
+	};
+  };
+  
+ 
+var computerPlayer = function() {
+	this.count = 0;
+	this.acceptMove = function() {
+	  this.computerMove();
+	};
+	this.computerMove = function() {
+	  this.count += 1;
+	};
+  };
+  
+
+
+  function sleep(milliseconds) {
+	var start = new Date().getTime();
+	for (var i = 0; i < 1e7; i++) {
+	  if ((new Date().getTime() - start) > milliseconds){
+		break;
+	  }
+	}
+  }
+
+function redraw() {
+	ctx.font="10px Sans-serif";
+	ctx.fillStyle="#333333";
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+	ctx.fillStyle="#00FFFF";
+	ctx.fillText(player1.count,100,50);
+	ctx.fillStyle="#FFFF00";
+	ctx.fillText(player2.count,100,70);
+	ctx.fillStyle="#EEEEEE";
+	ctx.fillText("PLAYER 1:", 40,50);
+	ctx.fillText("PLAYER 2:", 40,70);
+  }

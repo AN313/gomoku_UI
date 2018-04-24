@@ -1,5 +1,6 @@
 var canvas = document.getElementById("can");
 var ctx = canvas.getContext('2d');
+
 var gameState = "normal";
 
 var initGameLoop = function() {
@@ -7,11 +8,16 @@ var initGameLoop = function() {
   player2 = new computerPlayer();
   function animate () {
     if(gameState === "playerMove1") {
+      
       player1.acceptMove();
+      console.log("player 1");
       gameState ="playerMove2";
       
     } else if(gameState === "playerMove2"){
+      
+      sleep(3000);
       player2.acceptMove();
+      console.log("player 2");
       gameState ="wait";
     } else{
 
@@ -21,6 +27,16 @@ var initGameLoop = function() {
   }
   animate()
 };
+
+
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
 
 function redraw() {
   ctx.font="10px Sans-serif";
