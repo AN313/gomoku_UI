@@ -1,14 +1,23 @@
 var board = document.getElementById('chess');
 var context = chess.getContext('2d');
 
+// black -1 white 1
+var isGameOn = false;
+var isWhite = false;
+var isPlayer1Turn = true;
+var isVsComputer = true;
+var reseted = false;
 
-var isGameOn = false
-
-// TODO:  switch color button
+// init board value
+var brd = []; 
+for (var i = 0; i < 15; i++) {
+	brd[i] = [];
+	for (var j = 0; j < 15; j++) {
+		brd[i][j] = 0;
+	}
+}
 
 $(document).ready(function(){
-
-
     $("#switch").click(function(){
         // alert("Width of div: " + $("#chess").width());
         if (!isGameOn){
@@ -17,8 +26,6 @@ $(document).ready(function(){
         	alert("You can not switch side during a game");
         }
     });
-
-    
 });
 
 $(document).ready(function(){
@@ -31,16 +38,6 @@ $(document).ready(function(){
     }
 
 });
-var isWhite = false;
-
-// init board value
-var brd = []; 
-for (var i = 0; i < 15; i++) {
-	brd[i] = [];
-	for (var j = 0; j < 15; j++) {
-		brd[i][j] = 0;
-	}
-}
 
 // constant
 var size =  750// TODO: get size from responsive webpage 
@@ -86,7 +83,7 @@ var step = function(i, j, isWhite) {
 												stoneR, 
 												borderWidth + i * cellWidth + 2, 
 												borderWidth + j * cellWidth - 2, 
-												0);
+								0);
 	// TODO set color to constant 
 	if (isWhite) {
 		gradient.addColorStop(0, "#D1D1D1");
@@ -99,7 +96,6 @@ var step = function(i, j, isWhite) {
 	context.fillStyle = gradient;
 	context.fill();
 }
-
 
 // sample function 
 board.onclick = function(e) {
@@ -115,49 +111,24 @@ board.onclick = function(e) {
 			brd[i][j]=2;
 		}		
 	}
-
-	// Send JSON 
+	color = -1;
+	if (isWhite){
+		color = 1;
+	}
+	sendMove(i,j,color);
 	isWhite = !isWhite;
+
 }
 
 
-
-// function for recieving JSON from AI server
-// fake json for moves 
-
-// var move = '{ "x":"1", "y":"2" , "color":"black"}';
-
-// move_obj = JSON.parse(move);
-// document.getElementById("demo").inneHTML = move_obj.x + " " + move_obj.y + " " + move_obj.color;
-
-
-function httpGet(theUrl)
-{
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
-    xmlHttp.send( null );
-    return xmlHttp.responseText;
-}
-
-$(document).ready(function(){
-
-	// function for recieving JSON from AI server
-	// fake json for moves 
-	// var text = httpGet('http://localhost:8001/mcts')
-	var move = '{ "x":"1", "y":"2" , "color":"black"}';
-
-	move_obj = JSON.parse(move);
-	// document.getElementById("demo").inneHTML = move_obj.x + " " + move_obj.y + " " + move_obj.color;
-	// document.getElementById("demo").inneHTML = text
-
-    $("#play").click(function(){
-    	var text = '{"x":3,"y":3,"color":"black" }';
-    	obj = JSON.parse(text);
-    	i = obj.x
-    	j = obj.y
-    	isWhite = (obj.color == "white")
-        // alert("Width of div: " + $("#chess").width());
-        if (brd[i][j] == 0) {
+$("#play").click(function(){
+	var text = '{"x":3,"y":3,"color":"black" }';
+	obj = JSON.parse(text);
+	i = obj.x
+	j = obj.y
+	isWhite = (obj.color == "white")
+	// alert("Width of div: " + $("#chess").width());
+	if (brd[i][j] == 0) {
 		step(i, j, isWhite);
 		if (isWhite) {
 			brd[i][j]=1;
@@ -165,49 +136,165 @@ $(document).ready(function(){
 			brd[i][j]=2;
 		}		
 	}
-        
-    });
 });
 
 
+$("#reset").onclick = resetGame();
+
+$("#play").onclick = function(e) {
+	i = 10 // placeholder for now
+	// while(not game end)
+	if(reseted){
+		reseted = false;
+		while(i>0){
+			console.log("here in the game loop");
+			
+			if(isPlayer1Turn){
+				// default black first,computer play first move
+				playMove();
+				isPlayer1Turn = !isPlayer1Turn;
+			}else{
+				board.onclick = function(e) {
+					var x = e.offsetX;
+					var y = e.offsetY;
+					var i = Math.floor(x / cellWidth);
+					var j = Math.floor(y / cellWidth);
+					if (brd[i][j] == 0) {
+						step(i, j, isWhite);
+						if (isWhite) {
+							brd[i][j]=1;
+						} else {
+							brd[i][j]=2;
+						}		
+					}
+					color = -1;
+					if (isWhite){
+						color = 1;
+					}
+					sendMove(i,j,color);
+					isWhite = !isWhite;
+				
+				}
+			}
+			
+			
+			i=i-1;
+		}
+	
+	}
+}
+
+
+
+function sendMove(x, y, color){
+	$.ajax({
+		type: "post", 
+		// TODO: edit 
+		url: "http://cnx.ddns.net:8000/move?x="+x.toString()
+				+"&y="+y.toString()
+				+"&color="+color.toString(),
+		success: function (data) {
+			// alert("success");
+			console.log("send move success");
+		},
+		error: function (request, status, error) {
+			// alert(request.responseText);
+			console.log(equest.responseText);
+		}
+	});
+
+}
+
+function resetGame(){
+	$.ajax({
+		type: "post", 
+		url: "http://cnx.ddns.net:8000/reset",
+		success: function (data) {
+			// alert("success");
+			console.log("reset success");
+		},
+		error: function (request, status, error) {
+			// alert(request.responseText);
+			console.log(equest.responseText);
+		}
+	});
+	reseted = true;
+}
+
+function playMove(){
+	$.ajax({
+		type: "get", 
+		url: "http://cnx.ddns.net:8000/mcts",
+		success: function (data) {
+			console.log("get computer success");
+			makeMove(data['x'],data['y'])
+		},
+		error: function (request, status, error) {
+			// alert(request.responseText);
+			console.log(equest.responseText);
+    	}
+	});
+}
+
+function makeMove(i, j, color=1){
+	isWhite = (color == 1);
+	if (brd[i][j] == 0) {
+		step(i, j, isWhite);
+		if (isWhite) {
+			brd[i][j]=1;
+		} else {
+			brd[i][j]=2;
+		}	
+	}	
+	isWhite = !isWhite;
+} 
+
+// MAIN GAME LOOP
 $(document).ready(function(){
-    $.ajax({
-        url: 'http://localhost:8001/mcts',
-        dataType: 'json',
-        success: function(json) {
-            // Rates are in `json.rates`
-            // Base currency (USD) is `json.base`
-            // UNIX Timestamp when rates were collected is in `json.timestamp`        
+	var i = 10 // placeholder for now
+	// while(not game end)
+	if(reseted){
+		alert("was reseted")
+		reseted = false;
+		while(i>0){
+			console.log("here in the game loop");
+			
+			if(isPlayer1Turn){
+				// default black first,computer play first move
+				playMove();
+				isPlayer1Turn = !isPlayer1Turn;
+				console.log("got computer move");
+			}else{
+				console.log("waiting for user click");
+				board.onclick = function(e) {
+					var x = e.offsetX;
+					var y = e.offsetY;
+					var i = Math.floor(x / cellWidth);
+					var j = Math.floor(y / cellWidth);
+					if (brd[i][j] == 0) {
+						step(i, j, isWhite);
+						if (isWhite) {
+							brd[i][j]=1;
+						} else {
+							brd[i][j]=2;
+						}		
+					}
+					color = -1;
+					if (isWhite){
+						color = 1;
+					}
+					sendMove(i,j,color);
+					isWhite = !isWhite;
+				
+				}
+				// console.log(a)
+			}
+			
+			console.log(i)
+			i=i-1;
+		}
+	
+	}
 
-            rates = json.x;
-            base = json.y;
-            console.log('x: '+ x);
-            console.log('y: '+ y);
-        }
-    });
+
 });
-
-// sample function for sending ajax
-// function send() {
-//     var person = {
-//         name: $("#id-name").val(),
-//         address:$("#id-address").val(),
-//         phone:$("#id-phone").val()
-//     }
-
-//     $('#target').html('sending..');
-
-//     $.ajax({
-//         url: '/test/PersonSubmit',
-//         type: 'post',
-//         dataType: 'json',
-//         success: function (data) {
-//             $('#target').html(data.msg);
-//         },
-//         data: person
-//     });
-// }
-
-
-
-
