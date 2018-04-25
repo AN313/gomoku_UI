@@ -1,7 +1,6 @@
 var board = document.getElementById('chess');
 var context = chess.getContext('2d');
-var canvas = document.getElementById("can");
-var ctx = canvas.getContext('2d');
+
 
 ///////////////////////////////////
 //////    initialization    ///////
@@ -86,18 +85,17 @@ var step = function(i, j, isWhite) {
 	context.closePath();
 	var gradient = context.createRadialGradient(borderWidth + i * cellWidth + 2, 
 												borderWidth + j * cellWidth - 2, 
-												stoneR, 
+												stoneR/2.0, 
 												borderWidth + i * cellWidth + 2, 
 												borderWidth + j * cellWidth - 2, 
-								0);
+												stoneR);
 	// TODO set color to constant 
 	if (isWhite) {
-		gradient.addColorStop(0, "#D1D1D1");
-		gradient.addColorStop(1, "#F9F9F9");
+		gradient.addColorStop(0, "#F9F9F9");
+		gradient.addColorStop(1, "#D1D1D1");
 	} else {
-		gradient.addColorStop(0, "#0A0A0A");
-		gradient.addColorStop(1, "#636766");
-		
+		gradient.addColorStop(0, "#636766");
+		gradient.addColorStop(1, "#0A0A0A");
 	}
 	context.fillStyle = gradient;
 	context.fill();
@@ -109,6 +107,8 @@ board.onclick = function(e) {
 	var y = e.offsetY;
 	var i = Math.floor(x / cellWidth);
 	var j = Math.floor(y / cellWidth);
+	console.log(i);
+	console.log(j);
 	if (brd[i][j] == 0) {
 		step(i, j, isWhite);
 		if (isWhite) {
@@ -123,7 +123,7 @@ board.onclick = function(e) {
 	}
 	sendMove(i,j,color);
 	isWhite = !isWhite;
-
+	gameState ="playerMove1";
 }
 
 ////////////////////////////
@@ -135,6 +135,8 @@ $("#play").click(function(){
 	obj = JSON.parse(text);
 	i = obj.x
 	j = obj.y
+	console.log(i);
+	console.log(j);
 	isWhite = (obj.color == "white")
 	// alert("Width of div: " + $("#chess").width());
 	if (brd[i][j] == 0) {
@@ -169,6 +171,7 @@ function sendMove(x, y, color){
 		success: function (data) {
 			// alert("success");
 			console.log("send move success");
+			console.log(data);
 		},
 		error: function (request, status, error) {
 			// alert(request.responseText);
@@ -200,7 +203,14 @@ function playMove(){
 		url: "http://cnx.ddns.net:8000/mcts",
 		success: function (data) {
 			console.log("get computer success");
-			makeMove(data['x'],data['y'])
+			console.log(data);
+			makeMove(data['x'],data['y']);
+			color = -1;
+			if (isWhite){
+				color = 1;
+			}
+			sendMove(data['x'],data['y'],color);
+			isWhite = !isWhite;
 		},
 		error: function (request, status, error) {
 			// alert(request.responseText);
@@ -219,10 +229,8 @@ function makeMove(i, j, color=1){
 			brd[i][j]=2;
 		}	
 	}	
-	isWhite = !isWhite;
+	// isWhite = !isWhite;
 } 
-
-
 
 
 ///////////////////////////////
@@ -232,91 +240,36 @@ $(document).ready(function(){
 	// while(not game end)
 	if(reseted){
 		// if play button is hit
-
 		console.log("was reseted");
 		reseted = false;
-		
 		initGameLoop();
-		
-		
-		
 	}
-
 });
 
 ///////////////// moved from gameloop.js
 ////// need to fix 
 var initGameLoop = function() {
-	player1 = new humanPlayer();
-	player2 = new computerPlayer();
+
 	function animate () {
 	  if(gameState === "playerMove1") {
-		player1.acceptMove();
-      	console.log("player 1");
+		playMove();
+		// sendMove(x, y, color)
+		// player1.acceptMove();
+		// console.log("player 1");
+	
       	gameState ="playerMove2";
 		
 	  } else if(gameState === "playerMove2"){
-		sleep(3000);
-      	player2.acceptMove();
-      	console.log("player 2");
-      	gameState ="wait";
+	    
+		// sleep(3000);
+      	// player2.acceptMove();
+      	// console.log("player 2");
+      	
 	  } else{
   
 	  }
-	  redraw();
 	  requestAnimationFrame(animate);
 	}
 	animate();
 };
 
-function finishMove() {
-	gameState = "normal";
- }
- 
-function player1() {
-	gameState = "playerMove1";
-}
-
-canvas.addEventListener("click", player1);
-
-var humanPlayer = function() {
-	this.count = 0;
-	this.acceptMove = function() {
-	  this.count += 1;
-	};
-  };
-  
- 
-var computerPlayer = function() {
-	this.count = 0;
-	this.acceptMove = function() {
-	  this.computerMove();
-	};
-	this.computerMove = function() {
-	  this.count += 1;
-	};
-  };
-  
-
-
-  function sleep(milliseconds) {
-	var start = new Date().getTime();
-	for (var i = 0; i < 1e7; i++) {
-	  if ((new Date().getTime() - start) > milliseconds){
-		break;
-	  }
-	}
-  }
-
-function redraw() {
-	ctx.font="10px Sans-serif";
-	ctx.fillStyle="#333333";
-	ctx.fillRect(0,0,canvas.width,canvas.height);
-	ctx.fillStyle="#00FFFF";
-	ctx.fillText(player1.count,100,50);
-	ctx.fillStyle="#FFFF00";
-	ctx.fillText(player2.count,100,70);
-	ctx.fillStyle="#EEEEEE";
-	ctx.fillText("PLAYER 1:", 40,50);
-	ctx.fillText("PLAYER 2:", 40,70);
-  }
