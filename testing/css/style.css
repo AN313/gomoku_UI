@@ -1,0 +1,19 @@
+canvas{
+	display: block;
+	margin: 20px auto;
+}
+
+
+.center{
+	margin: 40px;
+	text-align: center
+}
+// #chess {
+//   width: 50%;
+// }
+
+// #chess:after {
+//   content: "";
+//   display: block;
+//   padding-bottom: 100%;
+// }
