@@ -9,9 +9,11 @@ var context = chess.getContext('2d');
 // black -1 white 1
 var gameState = "normal";
 var isGameOn = false;
-var isWhite = false;
+var isWhite = false;  ///////// fix this
 var isPlayer1Turn = true;
+var isVSComp = true;
 var reseted = false;
+var dataSent = false;
 
 // init board value
 var brd = []; 
@@ -25,8 +27,11 @@ for (var i = 0; i < 15; i++) {
 $(document).ready(function(){
     $("#switch").click(function(){
         // alert("Width of div: " + $("#chess").width());
+
         if (!isGameOn){
         	isWhite = !isWhite;
+        	console.log('iswhite')
+        	console.log(isWhite)
 	        if(isWhite){
 				$("#sideYou").text('You: White');
 			   	$("#sideComp").text('Computer: Black');
@@ -38,6 +43,27 @@ $(document).ready(function(){
         	alert("You can not switch side during a game");
         }
     });
+
+    $("#vsComp").click(function(){
+        // alert("Width of div: " + $("#chess").width());
+        console.log(isVSComp)
+        if (!isGameOn){
+        	isVSComp = !isVSComp;
+	        if(isVSComp){
+		    	$("#vsComp").text('Playing against: Computer');
+
+		    }else{
+		    	$("#vsComp").text('Playing against: Human');
+			}
+
+		    
+        } else {
+        	alert("You can not change opponent during a game");
+        }
+    });
+
+
+    
 });
 
 $(document).ready(function(){
@@ -48,6 +74,14 @@ $(document).ready(function(){
     	$("#sideYou").text('You: Black');
     	$("#sideComp").text('Computer: White');
     }
+    
+    if(isVSComp){
+    	$("#vsComp").text('Playing against: Computer');
+
+    }else{
+    	$("#vsComp").text('Playing against: Human');
+	}
+
 
 });
 
@@ -88,6 +122,7 @@ var drawBoard = function() {
 
 // Drawing step 
 var step = function(i, j, isWhite) {
+	isGameOn = true;
 	console.log("drawing step")
 
 	context.beginPath();
@@ -113,6 +148,7 @@ var step = function(i, j, isWhite) {
 
 // sample function 
 board.onclick = function(e) {
+
 	var x = e.offsetX;
 	var y = e.offsetY;
 	var i = Math.floor(x / cellWidth);
@@ -127,13 +163,21 @@ board.onclick = function(e) {
 			brd[i][j]=2;
 		}		
 	}
-	color = -1;
-	if (isWhite){
-		color = 1;
+	
+	if(isVSComp){
+		dataSent = false;
+		color = -1;
+		if (isWhite){
+			color = 1;
+		}
+
+		sendMove(i,j,color);
+		gameState ="playerMove1";
 	}
-	sendMove(i,j,color);
+	
 	isWhite = !isWhite;
-	gameState ="playerMove1";
+
+	
 }
 
 ////////////////////////////
@@ -144,16 +188,7 @@ board.onclick = function(e) {
 $("#reset").click(function(){
 	console.log("reseting")
 	resetGame();
-	
-
-	
-	
 });
-
-$("#stop").onclick = function(e) {
-	gameState = 'End';
-}
-
 
 
 ///////////////////////////////
@@ -164,13 +199,15 @@ function sendMove(x, y, color){
 	$.ajax({
 		type: "post", 
 		// TODO: edit 
-		url: "http://cnx.ddns.net:8000/move?x="+x.toString()
+		url: "http://cnx.ddns.net:8000/move?x="+ x.toString()
 				+"&y="+y.toString()
 				+"&color="+color.toString(),
 		success: function (data) {
 			// alert("success");
 			console.log("send move success");
-			console.log(data);
+			console.log("x="+ x.toString()+"   y="+y.toString()
+				+"   color="+color.toString());
+			dataSent=true;
 		},
 		error: function (request, status, error) {
 			// alert(request.responseText);
@@ -193,6 +230,7 @@ function resetGame(){
 					brd[i][j] = 0;
 				}
 			}
+			isGameOn = false;
 
 			context.clearRect(0, 0, board.width, board.height);
 			// context.drawImage(logo, 0, 0, size, size);
@@ -211,18 +249,20 @@ function resetGame(){
 }
 
 function playMove(){
+	dataSent = false;
 	$.ajax({
 		type: "get", 
 		url: "http://cnx.ddns.net:8000/mcts",
 		success: function (data) {
 			console.log("get computer success");
 			console.log(data);
-			makeMove(data['x'],data['y']);
+			makeMove(data['x'],data['y'],data['v_list']);
 			color = -1;
 			if (isWhite){
 				color = 1;
 			}
 			sendMove(data['x'],data['y'],color);
+			
 			isWhite = !isWhite;
 		},
 		error: function (request, status, error) {
@@ -234,15 +274,16 @@ function playMove(){
 
 // make one move
 // assign value 
-function makeMove(i, j, color=1){
-	isWhite = (color == 1);
+function makeMove(i, j, list){
+	// isWhite = (color == 1);
 	if (brd[i][j] == 0) {
 		step(i, j, isWhite);
+		// update board
 		if (isWhite) {
 			brd[i][j]=1;
 		} else {
 			brd[i][j]=2;
-		}	
+		}
 	}	
 } 
 
@@ -251,51 +292,43 @@ function makeMove(i, j, color=1){
 ///////////////////////////////
 $(document).ready(function(){
 	// while(not game end)
-	if(reseted){
-		// if play button is hit
-		console.log("was reseted");
-		reseted = false;
-		initGameLoop();
-	}else{
-		resetGame();
-		console.log("resete now!");
-		reseted = false;
-		initGameLoop();
+	if(isVSComp){
+		if(reseted){
+			// if play button is hit
+			console.log("was reseted");
+			reseted = false;
+			initGameLoop();
+		}else{
+			resetGame();
+			console.log("resete now!");
+			reseted = false;
+			initGameLoop();
+		}
 	}
-	
 });
 
 ///////////////// moved from gameloop.js
 ////// need to fix 
 var initGameLoop = function() {
+	if (isVSComp){ 
+		function animate () {
 
-	function animate () {
+			if(gameState === "playerMove1") {
+				if(dataSent){
+					playMove();	
+			      	gameState = "playerMove2";
+				}
+			  	} else if (gameState === "playerMove2"){
 
-	  if(gameState === "playerMove1") {
-		playMove();
-		// sendMove(x, y, color)
-		// player1.acceptMove();
-		// console.log("player 1");
-	
-      	gameState ="playerMove2";
-		
-	  } else if(gameState === "playerMove2"){
-	    
-		// sleep(3000);
-      	// player2.acceptMove();
-      	// console.log("player 2");
-      	
-	  } else{
-  
-	  }
+			  	} else{
+		  
+			  	}
+				requestAnimationFrame(animate);
+			}
+			animate();
 
-
-	  requestAnimationFrame(animate);
-
-
-	}
-
-
-	animate();
+		}else{
+			// human play human
+		}
 };
 
