@@ -163,7 +163,6 @@ board.onclick = function(e) {
 			brd[i][j]=2;
 		}		
 	}
-	
 	if(isVSComp){
 		dataSent = false;
 		color = -1;
@@ -284,7 +283,22 @@ function makeMove(i, j, list){
 		} else {
 			brd[i][j]=2;
 		}
-	}	
+	}
+	// draw probability for other possible moves 
+	console.log("drawing other possible moves")
+	for (idx in list) {
+		possible_move = list[idx]
+		console.log(possible_move);
+		context.beginPath();
+		context.setLineDash([5]);
+		context.arc(borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth, stoneR, 0, 2 * Math.PI);
+		context.textAlign = 'center';
+		context.textBaseline = 'middle';
+		context.fillText(possible_move['Q'],borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth);
+		context.closePath();
+		context.stroke();
+	}
+
 } 
 
 ///////////////////////////////
