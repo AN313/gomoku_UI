@@ -11,7 +11,6 @@ var gameState = "normal";
 var isGameOn = false;
 var isWhite = false;
 var isPlayer1Turn = true;
-var isVsComputer = true;
 var reseted = false;
 
 // init board value
@@ -27,7 +26,14 @@ $(document).ready(function(){
     $("#switch").click(function(){
         // alert("Width of div: " + $("#chess").width());
         if (!isGameOn){
-        	isWhite = !isWhite
+        	isWhite = !isWhite;
+	        if(isWhite){
+				$("#sideYou").text('You: White');
+			   	$("#sideComp").text('Computer: Black');
+			}else{
+		    	$("#sideYou").text('You: Black');
+		    	$("#sideComp").text('Computer: White');
+		    }
         } else {
         	alert("You can not switch side during a game");
         }
@@ -56,29 +62,33 @@ var stoneR = 50/2 - 3
 context.strokeStyle = '#666666';
 
 // TODO change logo to background? 
-var logo = new Image();
-logo.src = "image/logo.png";
-logo.onload = function() {
-	context.drawImage(logo, 0, 0, size, size);
+// var logo = new Image();
+// logo.src = "image/logo.png";
+$(document).ready(function() {
+	// context.drawImage(logo, 0, 0, size, size);
 	drawBoard();
-}
+});
 
-//Draw board 
+
+//Draw board
 var drawBoard = function() {
 	for (var i = 0; i < borderWidth; i++) {
+		console.log("drawing line")
+		context.beginPath();
 		context.moveTo(borderWidth + i * cellWidth, borderWidth);
 		context.lineTo(borderWidth + i * cellWidth, size - borderWidth);
 		context.stroke();
 		context.moveTo(borderWidth, borderWidth + i * cellWidth);
 		context.lineTo(size - borderWidth, borderWidth + i * cellWidth);
 		context.stroke();
+		context.closePath();
 	}
 }
 
+
+// Drawing step 
 var step = function(i, j, isWhite) {
-	if (!isGameOn){
-		isGameOn = true
-	}
+	console.log("drawing step")
 
 	context.beginPath();
 	context.arc(borderWidth + i * cellWidth, borderWidth + j * cellWidth, stoneR, 0, 2 * Math.PI);
@@ -130,26 +140,15 @@ board.onclick = function(e) {
 //////    buttons    ///////
 ////////////////////////////
 
-$("#play").click(function(){
-	var text = '{"x":3,"y":3,"color":"black" }';
-	obj = JSON.parse(text);
-	i = obj.x
-	j = obj.y
-	console.log(i);
-	console.log(j);
-	isWhite = (obj.color == "white")
-	// alert("Width of div: " + $("#chess").width());
-	if (brd[i][j] == 0) {
-		step(i, j, isWhite);
-		if (isWhite) {
-			brd[i][j]=1;
-		} else {
-			brd[i][j]=2;
-		}		
-	}
-});
 
-$("#reset").onclick = resetGame();
+$("#reset").click(function(){
+	console.log("reseting")
+	resetGame();
+	
+
+	
+	
+});
 
 $("#stop").onclick = function(e) {
 	gameState = 'End';
@@ -188,6 +187,19 @@ function resetGame(){
 		success: function (data) {
 			// alert("success");
 			console.log("reset success");
+			for (var i = 0; i < 15; i++) {
+				brd[i] = [];
+				for (var j = 0; j < 15; j++) {
+					brd[i][j] = 0;
+				}
+			}
+
+			context.clearRect(0, 0, board.width, board.height);
+			// context.drawImage(logo, 0, 0, size, size);
+			console.log("redrew board");
+			// drawBoard();
+			drawBoard();
+	
 		},
 		error: function (request, status, error) {
 			// alert(request.responseText);
@@ -195,6 +207,7 @@ function resetGame(){
 		}
 	});
 	reseted = true;
+	// reset board
 }
 
 function playMove(){
@@ -219,6 +232,8 @@ function playMove(){
 	});
 }
 
+// make one move
+// assign value 
 function makeMove(i, j, color=1){
 	isWhite = (color == 1);
 	if (brd[i][j] == 0) {
@@ -229,9 +244,7 @@ function makeMove(i, j, color=1){
 			brd[i][j]=2;
 		}	
 	}	
-	// isWhite = !isWhite;
 } 
-
 
 ///////////////////////////////
 //////    gameloop    /////////
@@ -243,7 +256,13 @@ $(document).ready(function(){
 		console.log("was reseted");
 		reseted = false;
 		initGameLoop();
+	}else{
+		resetGame();
+		console.log("resete now!");
+		reseted = false;
+		initGameLoop();
 	}
+	
 });
 
 ///////////////// moved from gameloop.js
@@ -251,6 +270,7 @@ $(document).ready(function(){
 var initGameLoop = function() {
 
 	function animate () {
+
 	  if(gameState === "playerMove1") {
 		playMove();
 		// sendMove(x, y, color)
@@ -268,8 +288,14 @@ var initGameLoop = function() {
 	  } else{
   
 	  }
+
+
 	  requestAnimationFrame(animate);
+
+
 	}
+
+
 	animate();
 };
 
