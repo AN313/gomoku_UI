@@ -4,6 +4,7 @@ var board1 = document.getElementById('prob');
 var context_prob = prob.getContext('2d');
 var container = document.getElementById('canvas_container');
 
+
 ///////////////////////////////////
 //////    initialization    ///////
 ///////////////////////////////////
@@ -16,6 +17,7 @@ var isPlayer1Turn = true;
 var isVSComp = true;
 var reseted = false;
 var dataSent = false;
+var displayProb = true;
 
 // init board value
 var brd = []; 
@@ -27,47 +29,6 @@ for (var i = 0; i < 15; i++) {
 }
 
 $(document).ready(function(){
-    $("#switch").click(function(){
-
-        if (!isGameOn){
-        	isWhite = !isWhite;
-        	console.log('iswhite')
-        	console.log(isWhite)
-	        if(isWhite){
-				$("#sideYou").text('You: White');
-			   	$("#sideComp").text('Computer: Black');
-			}else{
-		    	$("#sideYou").text('You: Black');
-		    	$("#sideComp").text('Computer: White');
-		    }
-        } else {
-        	alert("You can not switch side during a game");
-        }
-    });
-
-    $("#vsComp").click(function(){
-        // alert("Width of div: " + $("#chess").width());
-        console.log(isVSComp)
-        if (!isGameOn){
-        	isVSComp = !isVSComp;
-	        if(isVSComp){
-		    	$("#vsComp").text('Playing against: Computer');
-
-		    }else{
-		    	$("#vsComp").text('Playing against: Human');
-			}
-
-		    
-        } else {
-        	alert("You can not change opponent during a game");
-        }
-    });
-
-
-    
-});
-
-$(document).ready(function(){
 	if(isWhite){
 		$("#sideYou").text('You: White');
 	   	$("#sideComp").text('Computer: Black');
@@ -75,20 +36,16 @@ $(document).ready(function(){
     	$("#sideYou").text('You: Black');
     	$("#sideComp").text('Computer: White');
     }
-    
     if(isVSComp){
     	$("#vsComp").text('Playing against: Computer');
 
     }else{
     	$("#vsComp").text('Playing against: Human');
 	}
-
-
 });
 
 // constant
 var size =  750// TODO: get size from responsive webpage 
-// $("#chess").width()
 var borderWidth = 25
 var cellWidth = 50
 var stoneR = 50/2 - 3
@@ -147,7 +104,6 @@ var step = function(i, j, isWhite) {
 	context.fill();
 }
 
-// sample function 
 // board.onclick = function(e) {
 container.onclick = function(e) {
 	context_prob.clearRect(0, 0, board.width, board.height);
@@ -171,24 +127,54 @@ container.onclick = function(e) {
 		if (isWhite){
 			color = 1;
 		}
-
 		sendMove(i,j,color);
 		gameState ="playerMove1";
 	}
-	
+	// switch side after clicking the board
 	isWhite = !isWhite;
-
-	
 }
 
 ////////////////////////////
 //////    buttons    ///////
 ////////////////////////////
 
-
 $("#reset").click(function(){
 	console.log("reseting")
 	resetGame();
+});
+
+$(document).ready(function(){
+    $("#switch").click(function(){
+    	// set human player's color 
+    	// black play first 
+        if (!isGameOn){
+        	isWhite = !isWhite;
+	        if(isWhite){
+				$("#sideYou").text('You: White');
+			   	$("#sideComp").text('Computer: Black');
+			}else{
+		    	$("#sideYou").text('You: Black');
+		    	$("#sideComp").text('Computer: White');
+		    }
+        } else {
+        	alert("You can not switch side during a game");
+        }
+    });
+
+    $("#vsComp").click(function(){
+        // set if playing against computer
+        // default true
+        if (!isGameOn){
+        	isVSComp = !isVSComp;
+	        if(isVSComp){
+		    	$("#vsComp").text('Playing against: Computer');
+		    }else{
+		    	$("#vsComp").text('Playing against: Human');
+			}
+        } else {
+        	alert("You can not change opponent during a game");
+        }
+    });
 });
 
 
@@ -199,19 +185,16 @@ $("#reset").click(function(){
 function sendMove(x, y, color){
 	$.ajax({
 		type: "post", 
-		// TODO: edit 
 		url: "http://cnx.ddns.net:8000/move?x="+ x.toString()
 				+"&y="+y.toString()
 				+"&color="+color.toString(),
 		success: function (data) {
-			// alert("success");
 			console.log("send move success");
 			console.log("x="+ x.toString()+"   y="+y.toString()
 				+"   color="+color.toString());
 			dataSent=true;
 		},
 		error: function (request, status, error) {
-			// alert(request.responseText);
 			console.log(equest.responseText);
 		}
 	});
@@ -234,19 +217,15 @@ function resetGame(){
 			isGameOn = false;
 
 			context.clearRect(0, 0, board.width, board.height);
-			// context.drawImage(logo, 0, 0, size, size);
 			console.log("redrew board");
-			// drawBoard();
 			drawBoard();
 	
 		},
 		error: function (request, status, error) {
-			// alert(request.responseText);
 			console.log(equest.responseText);
 		}
 	});
 	reseted = true;
-	// reset board
 }
 
 function playMove(){
@@ -263,18 +242,16 @@ function playMove(){
 				color = 1;
 			}
 			sendMove(data['x'],data['y'],color);
-			
+			// switch side after computer makes move		
 			isWhite = !isWhite;
 		},
 		error: function (request, status, error) {
-			// alert(request.responseText);
 			console.log(equest.responseText);
     	}
 	});
 }
 
-// make one move
-// assign value 
+
 function makeMove(i, j, list){
 	// isWhite = (color == 1);
 	if (brd[i][j] == 0) {
@@ -287,19 +264,27 @@ function makeMove(i, j, list){
 		}
 	}
 	// draw probability for other possible moves 
-	console.log("drawing other possible moves")
-	for (idx in list) {
-		possible_move = list[idx]
-		console.log(possible_move);
-		context_prob.beginPath();
-		context_prob.setLineDash([5]);
-		context_prob.arc(borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth, stoneR, 0, 2 * Math.PI);
-		context_prob.textAlign = 'center';
-		context_prob.textBaseline = 'middle';
-		context_prob.fillStyle = "#ff6a00";
-		context_prob.fillText(possible_move['Q'].toFixed(2),borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth);
-		context_prob.closePath();
-		context_prob.stroke();
+	if (displayProb){
+		console.log("drawing other possible moves")
+		for (idx in list) {
+			possible_move = list[idx]
+			console.log(possible_move);
+			context_prob.beginPath();
+			context_prob.setLineDash([5]);
+			context_prob.arc(borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth, stoneR, 0, 2 * Math.PI);
+			context_prob.textAlign = 'center';
+			context_prob.textBaseline = 'middle';
+			context_prob.fillStyle = "#ff6a00";
+			context_prob.fillText(	possible_move['Q'].toFixed(2),
+									borderWidth + possible_move['x'] * cellWidth, 
+									borderWidth + possible_move['y'] * cellWidth);
+			// display coordinates
+			// context_prob.fillText(	possible_move['x'].toString()+" "+possible_move['y'].toString(),
+			// 						borderWidth + possible_move['x'] * cellWidth, 
+			// 						borderWidth + possible_move['y'] * cellWidth);
+			context_prob.closePath();
+			context_prob.stroke();
+		}
 	}
 
 } 
@@ -311,7 +296,6 @@ $(document).ready(function(){
 	// while(not game end)
 	if(isVSComp){
 		if(reseted){
-			// if play button is hit
 			console.log("was reseted");
 			reseted = false;
 			initGameLoop();
@@ -333,17 +317,18 @@ var initGameLoop = function() {
 					playMove();	
 			      	gameState = "playerMove2";
 				}
-			  	} else if (gameState === "playerMove2"){
+			} else if (gameState === "playerMove2"){
 
-			  	} else{
+			} else{
 		  
-			  	}
-				requestAnimationFrame(animate);
 			}
+			requestAnimationFrame(animate);
+		}
 			animate();
 
-		}else{
-			// human play human
-		}
+	}else{
+		// human play human 
+		// does not need gameloop
+	}
 };
 
