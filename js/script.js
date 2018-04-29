@@ -11,7 +11,7 @@ var container = document.getElementById('canvas_container');
 
 // black -1 white 1
 var isGameOn = false;
-var isWhite = true;  
+var isWhite = false;  
 var isPlayer1Turn = true;
 var isVSComp = true;
 var reseted = false;
