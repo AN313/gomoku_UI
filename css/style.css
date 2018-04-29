@@ -3,6 +3,8 @@ canvas{
 	margin: 20px auto;
 }
 
+    #canvas_container { position: relative; width=750; height = 750;}
+    canvas { position: absolute; top: 0; left: 0; }
 
 .center{
 	margin: 40px;

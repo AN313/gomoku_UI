@@ -1,6 +1,8 @@
 var board = document.getElementById('chess');
 var context = chess.getContext('2d');
-
+var board1 = document.getElementById('prob');
+var context_prob = prob.getContext('2d');
+var container = document.getElementById('canvas_container');
 
 ///////////////////////////////////
 //////    initialization    ///////
@@ -9,7 +11,7 @@ var context = chess.getContext('2d');
 // black -1 white 1
 var gameState = "normal";
 var isGameOn = false;
-var isWhite = false;  ///////// fix this
+var isWhite = false;  
 var isPlayer1Turn = true;
 var isVSComp = true;
 var reseted = false;
@@ -26,7 +28,6 @@ for (var i = 0; i < 15; i++) {
 
 $(document).ready(function(){
     $("#switch").click(function(){
-        // alert("Width of div: " + $("#chess").width());
 
         if (!isGameOn){
         	isWhite = !isWhite;
@@ -147,8 +148,9 @@ var step = function(i, j, isWhite) {
 }
 
 // sample function 
-board.onclick = function(e) {
-
+// board.onclick = function(e) {
+container.onclick = function(e) {
+	context_prob.clearRect(0, 0, board.width, board.height);
 	var x = e.offsetX;
 	var y = e.offsetY;
 	var i = Math.floor(x / cellWidth);
@@ -289,14 +291,15 @@ function makeMove(i, j, list){
 	for (idx in list) {
 		possible_move = list[idx]
 		console.log(possible_move);
-		context.beginPath();
-		context.setLineDash([5]);
-		context.arc(borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth, stoneR, 0, 2 * Math.PI);
-		context.textAlign = 'center';
-		context.textBaseline = 'middle';
-		context.fillText(possible_move['Q'],borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth);
-		context.closePath();
-		context.stroke();
+		context_prob.beginPath();
+		context_prob.setLineDash([5]);
+		context_prob.arc(borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth, stoneR, 0, 2 * Math.PI);
+		context_prob.textAlign = 'center';
+		context_prob.textBaseline = 'middle';
+		context_prob.fillStyle = "#ff6a00";
+		context_prob.fillText(possible_move['Q'].toFixed(2),borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth);
+		context_prob.closePath();
+		context_prob.stroke();
 	}
 
 } 
@@ -321,8 +324,6 @@ $(document).ready(function(){
 	}
 });
 
-///////////////// moved from gameloop.js
-////// need to fix 
 var initGameLoop = function() {
 	if (isVSComp){ 
 		function animate () {
