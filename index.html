@@ -6,20 +6,28 @@
 	<link rel="stylesheet" href="css/style.css">
 	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
+
 <body>
 	<h1 class="center">GOMOKU</h1>
 	<button id="reset">Reset</button>
+	<br>
 	<button id="vsComp">Choose opponent</button>
+	<br>
 	<button id="switch">Switch Side</button>
+	<br>
+	<button id="start">Start Game</button>
+	<p id = "start"></p>
 	<p id = "vsComp"></p>
 	<p id = "sideYou"></p>
 	<p id = "sideComp"></p>
-	<canvas id="chess" width="750px" height="750px"></canvas>
 
-	<!-- <p id="demo"></p> -->
-	<!-- <button id="play">Play Next Move</button> -->
 
-	<!-- <button id="stop">Stop</button> -->
+
+	<div id = "canvas_container">
+		<canvas id="chess" width="750px" height="750px"></canvas>
+		<canvas id="prob" width="750px" height="750px"></canvas>
+	</div>
+
 	<script src="js/script.js"></script>
 
 </body>

@@ -1,19 +1,20 @@
-canvas{
-	display: block;
-	margin: 20px auto;
+
+
+#canvas_container { 
+	position: relative; 
+	width=750; 
+	height = 750;
 }
 
+canvas { 
+	display: block;
+	margin: 20px auto;
+	position: absolute; 
+	top: 0; 
+	left: 0; 
+}
 
 .center{
 	margin: 40px;
 	text-align: center
 }
-// #chess {
-//   width: 50%;
-// }
-
-// #chess:after {
-//   content: "";
-//   display: block;
-//   padding-bottom: 100%;
-// }

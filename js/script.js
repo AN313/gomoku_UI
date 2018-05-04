@@ -1,5 +1,8 @@
 var board = document.getElementById('chess');
 var context = chess.getContext('2d');
+var board1 = document.getElementById('prob');
+var context_prob = prob.getContext('2d');
+var container = document.getElementById('canvas_container');
 
 
 ///////////////////////////////////
@@ -7,13 +10,13 @@ var context = chess.getContext('2d');
 ///////////////////////////////////
 
 // black -1 white 1
-var gameState = "normal";
 var isGameOn = false;
-var isWhite = false;  ///////// fix this
+var isWhite = false;  
 var isPlayer1Turn = true;
 var isVSComp = true;
 var reseted = false;
-var dataSent = false;
+var dataSent = true;
+var displayProb = true;
 
 // init board value
 var brd = []; 
@@ -25,48 +28,6 @@ for (var i = 0; i < 15; i++) {
 }
 
 $(document).ready(function(){
-    $("#switch").click(function(){
-        // alert("Width of div: " + $("#chess").width());
-
-        if (!isGameOn){
-        	isWhite = !isWhite;
-        	console.log('iswhite')
-        	console.log(isWhite)
-	        if(isWhite){
-				$("#sideYou").text('You: White');
-			   	$("#sideComp").text('Computer: Black');
-			}else{
-		    	$("#sideYou").text('You: Black');
-		    	$("#sideComp").text('Computer: White');
-		    }
-        } else {
-        	alert("You can not switch side during a game");
-        }
-    });
-
-    $("#vsComp").click(function(){
-        // alert("Width of div: " + $("#chess").width());
-        console.log(isVSComp)
-        if (!isGameOn){
-        	isVSComp = !isVSComp;
-	        if(isVSComp){
-		    	$("#vsComp").text('Playing against: Computer');
-
-		    }else{
-		    	$("#vsComp").text('Playing against: Human');
-			}
-
-		    
-        } else {
-        	alert("You can not change opponent during a game");
-        }
-    });
-
-
-    
-});
-
-$(document).ready(function(){
 	if(isWhite){
 		$("#sideYou").text('You: White');
 	   	$("#sideComp").text('Computer: Black');
@@ -74,34 +35,31 @@ $(document).ready(function(){
     	$("#sideYou").text('You: Black');
     	$("#sideComp").text('Computer: White');
     }
-    
     if(isVSComp){
     	$("#vsComp").text('Playing against: Computer');
 
     }else{
     	$("#vsComp").text('Playing against: Human');
 	}
-
-
 });
 
 // constant
 var size =  750// TODO: get size from responsive webpage 
-// $("#chess").width()
 var borderWidth = 25
 var cellWidth = 50
 var stoneR = 50/2 - 3
 
 //add background and set strock color 
-context.strokeStyle = '#666666';
+context.strokeStyle = '#000000';
 
 // TODO change logo to background? 
-// var logo = new Image();
-// logo.src = "image/logo.png";
-$(document).ready(function() {
-	// context.drawImage(logo, 0, 0, size, size);
+var background = new Image();
+background.src = "image/white.png";
+// $(document).ready(function() {
+background.onload = function() {
+	context.drawImage(background, 0, 0, size, size);
 	drawBoard();
-});
+}
 
 
 //Draw board
@@ -146,9 +104,9 @@ var step = function(i, j, isWhite) {
 	context.fill();
 }
 
-// sample function 
-board.onclick = function(e) {
-
+// board.onclick = function(e) {
+container.onclick = function(e) {
+	context_prob.clearRect(0, 0, board.width, board.height);
 	var x = e.offsetX;
 	var y = e.offsetY;
 	var i = Math.floor(x / cellWidth);
@@ -169,24 +127,64 @@ board.onclick = function(e) {
 		if (isWhite){
 			color = 1;
 		}
-
 		sendMove(i,j,color);
-		gameState ="playerMove1";
+		// $('#canvas_container').click(function(){return false;});
+		// gameState ="playerMove1";
+		isPlayer1Turn = !isPlayer1Turn;
 	}
-	
+	// switch side after clicking the board
 	isWhite = !isWhite;
-
-	
 }
 
 ////////////////////////////
 //////    buttons    ///////
 ////////////////////////////
 
-
 $("#reset").click(function(){
 	console.log("reseting")
 	resetGame();
+});
+
+
+
+$(document).ready(function(){
+    $("#switch").click(function(){
+    	// set human player's color 
+    	// black play first 
+        if (!isGameOn){
+        	isWhite = !isWhite;
+	        if(isWhite){
+				$("#sideYou").text('You: White');
+			   	$("#sideComp").text('Computer: Black');
+			}else{
+		    	$("#sideYou").text('You: Black');
+		    	$("#sideComp").text('Computer: White');
+		    }
+        } else {
+        	alert("You can not switch side during a game");
+        }
+    });
+
+    $("#vsComp").click(function(){
+        // set if playing against computer
+        // default true
+        if (!isGameOn){
+        	isVSComp = !isVSComp;
+	        if(isVSComp){
+		    	$("#vsComp").text('Playing against: Computer');
+		    }else{
+		    	$("#vsComp").text('Playing against: Human');
+			}
+        } else {
+        	alert("You can not change opponent during a game");
+        }
+    });
+    $("#start").click(function(){
+        // start 
+        isGameOn = true;
+        console.log("game started")
+        
+    });
 });
 
 
@@ -197,19 +195,16 @@ $("#reset").click(function(){
 function sendMove(x, y, color){
 	$.ajax({
 		type: "post", 
-		// TODO: edit 
 		url: "http://cnx.ddns.net:8000/move?x="+ x.toString()
 				+"&y="+y.toString()
 				+"&color="+color.toString(),
 		success: function (data) {
-			// alert("success");
 			console.log("send move success");
 			console.log("x="+ x.toString()+"   y="+y.toString()
 				+"   color="+color.toString());
 			dataSent=true;
 		},
 		error: function (request, status, error) {
-			// alert(request.responseText);
 			console.log(equest.responseText);
 		}
 	});
@@ -232,19 +227,19 @@ function resetGame(){
 			isGameOn = false;
 
 			context.clearRect(0, 0, board.width, board.height);
-			// context.drawImage(logo, 0, 0, size, size);
+			context_prob.clearRect(0, 0, board.width, board.height);
 			console.log("redrew board");
-			// drawBoard();
-			drawBoard();
+			// background.onload = function() {
+				context.drawImage(background, 0, 0, size, size);
+				drawBoard();
+			
 	
 		},
 		error: function (request, status, error) {
-			// alert(request.responseText);
 			console.log(equest.responseText);
 		}
 	});
 	reseted = true;
-	// reset board
 }
 
 function playMove(){
@@ -261,18 +256,16 @@ function playMove(){
 				color = 1;
 			}
 			sendMove(data['x'],data['y'],color);
-			
+			// switch side after computer makes move		
 			isWhite = !isWhite;
 		},
 		error: function (request, status, error) {
-			// alert(request.responseText);
 			console.log(equest.responseText);
     	}
 	});
 }
 
-// make one move
-// assign value 
+
 function makeMove(i, j, list){
 	// isWhite = (color == 1);
 	if (brd[i][j] == 0) {
@@ -285,18 +278,26 @@ function makeMove(i, j, list){
 		}
 	}
 	// draw probability for other possible moves 
-	console.log("drawing other possible moves")
-	for (idx in list) {
-		possible_move = list[idx]
-		console.log(possible_move);
-		context.beginPath();
-		context.setLineDash([5]);
-		context.arc(borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth, stoneR, 0, 2 * Math.PI);
-		context.textAlign = 'center';
-		context.textBaseline = 'middle';
-		context.fillText(possible_move['Q'],borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth);
-		context.closePath();
-		context.stroke();
+	// 
+	if (displayProb){
+		console.log("drawing other possible moves")
+		for (idx in list) {
+			possible_move = list[idx]
+			console.log(possible_move);
+			context_prob.beginPath();
+			context_prob.setLineDash([5]);
+			context_prob.arc(borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth, stoneR, 0, 2 * Math.PI);
+			context_prob.textAlign = 'center';
+			context_prob.textBaseline = 'middle';
+			// context_prob.fillStyle = "#fff";
+			// context_prob.fill();
+			context_prob.fillStyle = "#ff6600";
+			context_prob.fillText(	possible_move['Q'].toFixed(2),
+									borderWidth + possible_move['x'] * cellWidth, 
+									borderWidth + possible_move['y'] * cellWidth);
+			context_prob.closePath();
+			context_prob.stroke();
+		}
 	}
 
 } 
@@ -307,42 +308,76 @@ function makeMove(i, j, list){
 $(document).ready(function(){
 	// while(not game end)
 	if(isVSComp){
-		if(reseted){
-			// if play button is hit
-			console.log("was reseted");
-			reseted = false;
-			initGameLoop();
-		}else{
-			resetGame();
-			console.log("resete now!");
-			reseted = false;
-			initGameLoop();
-		}
+		
+			if(reseted){
+
+				console.log("was reseted");
+				reseted = false;
+				initGameLoop(isGameOn);
+			}else{
+				resetGame();
+				console.log("resete now!");
+				reseted = false;
+				initGameLoop(isGameOn);
+			}
+
 	}
+
 });
 
-///////////////// moved from gameloop.js
-////// need to fix 
+
+// create two game loop for switching sides
 var initGameLoop = function() {
-	if (isVSComp){ 
-		function animate () {
 
-			if(gameState === "playerMove1") {
-				if(dataSent){
-					playMove();	
-			      	gameState = "playerMove2";
+		if (isVSComp){ 
+			// if computer first (isWhite == true )
+		
+			if (isWhite){
+				// since computer is first and playing black
+				isWhite =!isWhite;
+
+				function animate () {
+
+					if(isPlayer1Turn) {
+						
+						if(dataSent){
+							playMove();	
+					      	isPlayer1Turn = !isPlayer1Turn;
+					      
+						}
+					} else if (!isPlayer1Turn ){
+				
+
+					} else{
+				  
+					}
+					requestAnimationFrame(animate);
 				}
-			  	} else if (gameState === "playerMove2"){
+				animate();
 
-			  	} else{
-		  
-			  	}
-				requestAnimationFrame(animate);
+			}else{
+				// else human first (isWhite ==flase)
+				function animate () {
+
+					if(isPlayer1Turn) {
+
+					} else if (!isPlayer1Turn){
+						
+						
+						if(dataSent){
+							playMove();	
+					      	isPlayer1Turn=!isPlayer1Turn;
+						}
+					} else{
+				  
+					}
+					requestAnimationFrame(animate);
+				}
+				animate();
 			}
-			animate();
-
 		}else{
-			// human play human
-		}
+		// human play human 
+		// does not need gameloop
+		}	
 };
 
