@@ -8,18 +8,23 @@
 </head>
 
 <body>
-	<h1 class="center">GOMOKU</h1>
-	<button id="reset">Reset</button>
-	<br>
-	<button id="vsComp">Choose opponent</button>
-	<br>
-	<button id="switch">Switch Side</button>
-	<br>
-	<button id="start">Start Game</button>
+	<h1 class="center"> <i>Cuoqi</i> - a Gomoku AI</h1>
+	<div id="buttonContainer">
+		<button  class="btn" id="start">Start Game</button>
+		<br>
+		<button class="btn" id="reset">Reset</button>
+		<br>
+		<button  class="btn" id="vsComp">Choose opponent</button>
+		<br>
+		<button  class="btn" id="switch">Switch Color</button>
+	</div>
+
 	<p id = "start"></p>
 	<p id = "vsComp"></p>
-	<p id = "sideYou"></p>
-	<p id = "sideComp"></p>
+	<p id = "gameInfo">
+		<span id = "sideYou"></span>
+		<span id = "sideComp"></span>
+	</p>
 
 
 
