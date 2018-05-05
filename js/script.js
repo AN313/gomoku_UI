@@ -106,20 +106,25 @@ var step = function(i, j, isWhite) {
 
 	// board.onclick = function(e) {
 	container.onclick = function(e) {
+		if (!isPlayer1Turn) {
+			console.log("not plyer1 turn yet");
+			return;
+		}
+
 		var x = e.offsetX;
 		var y = e.offsetY;
 		var i = Math.floor(x / cellWidth);
 		var j = Math.floor(y / cellWidth);
-		console.log(i);
-		console.log(j);
+		console.log(i,j);
 		if (brd[i][j] != 0) return;
+
 		context_prob.clearRect(0, 0, board.width, board.height);
 		if (brd[i][j] == 0) {
 			step(i, j, isWhite);
 			if (isWhite) {
 				brd[i][j]=1;
 			} else {
-				brd[i][j]=2;
+				brd[i][j]=2; //TODO: typo?
 			}
 		}
 		if(isVSComp){
@@ -154,6 +159,7 @@ var step = function(i, j, isWhite) {
 			// black play first
 			if (!isGameOn){
 				isWhite = !isWhite;
+				isPlayer1Turn = !isPlayer1Turn;
 				if(isWhite){
 					$("#sideYou").text('You: White');
 					$("#sideComp").text('Computer: Black');
@@ -184,7 +190,7 @@ var step = function(i, j, isWhite) {
 			// start
 			isGameOn = true;
 			console.log("game started")
-
+			initGameLoop();
 		});
 	});
 
@@ -244,6 +250,8 @@ var step = function(i, j, isWhite) {
 	}
 
 	function playMove(){
+		if (isPlayer1Turn) return;
+		console.log("requesting computer to move");
 		dataSent = false;
 		$.ajax({
 			type: "get",
@@ -266,7 +274,7 @@ var step = function(i, j, isWhite) {
 		});
 
 		// switch side after computer makes move
-		isWhite = !isWhite;
+		// isWhite = !isWhite;
 	}
 
 
@@ -287,7 +295,7 @@ var step = function(i, j, isWhite) {
 			console.log("drawing other possible moves")
 			for (idx in list) {
 				possible_move = list[idx]
-				console.log(possible_move);
+				// console.log(possible_move);
 				context_prob.beginPath();
 				context_prob.setLineDash([5]);
 				context_prob.arc(borderWidth + possible_move['x'] * cellWidth, borderWidth + possible_move['y'] * cellWidth, stoneR, 0, 2 * Math.PI);
@@ -316,12 +324,12 @@ var step = function(i, j, isWhite) {
 			if(reseted){
 				console.log("was reseted");
 				reseted = false;
-				initGameLoop(isGameOn);
+				initGameLoop();
 			}else{
 				resetGame();
-				console.log("resete now!");
+				console.log("reset now!");
 				reseted = false;
-				initGameLoop(isGameOn);
+				initGameLoop();
 			}
 
 		}
@@ -331,26 +339,22 @@ var step = function(i, j, isWhite) {
 
 	// create two game loop for switching sides
 	var initGameLoop = function() {
-
+		if (! isGameOn) return;
 		if (isVSComp){
 			// if computer first (isWhite == true )
-
 			if (isWhite){
+				console.log("in initGameLoop, isWhite==true")
 				// since computer is first and playing black
 				isWhite =!isWhite;
 
 				function animate () {
 
-					if(isPlayer1Turn) {
-
+					if(!isPlayer1Turn) {
 						if(dataSent){
 							playMove();
 							isPlayer1Turn = !isPlayer1Turn;
 
 						}
-					} else if (!isPlayer1Turn ){
-
-
 					} else{
 
 					}
@@ -359,13 +363,13 @@ var step = function(i, j, isWhite) {
 				animate();
 
 			}else{
-				// else human first (isWhite ==flase)
+				console.log("in initGameLoop, isWhite==false")
+				// else human first (isWhite ==false)
 				function animate () {
 
 					if(isPlayer1Turn) {
 
 					} else if (!isPlayer1Turn){
-
 
 						if(dataSent){
 							playMove();

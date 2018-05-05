@@ -2,7 +2,9 @@
 
 #canvas_container {
 	position: relative;
-	width: 100%;
+	width: 750px;
+	margin-left: auto;
+  margin-right: auto;
 	height: 750px;
 	-webkit-align-content: center;
   align-content: center;
@@ -13,6 +15,8 @@ canvas {
 	display: block;
 	margin: 20px auto;
 	top: 0;
+	position: absolute;
+	left: 0;
 }
 
 .center{
